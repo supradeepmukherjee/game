@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body></body>
+
+<script src="https://unpkg.com/kaboom@3000.0.1/dist/kaboom.js"></script>
+<script>
+    // initialize kaboom context
+    kaboom({ background: [55, 55, 0] })
+
+    // Setting a title for the page
+    document.title = 'Programmer, Chai and Bugs'
+
+    // load the sprites
+    loadSprite('bug', '/sprites/bug.png')
+    loadSprite('chai', '/sprites/chai.png')
+    loadSprite('programmer', '/sprites/programmer.png')
+
+    // load the music
+    loadSound('bg', '/sounds/bg.mp3')
+    loadSound('gameOver', '/sounds/gameOver.mp3')
+    loadSound('harry', '/sounds/harry.mp3')
+    loadSound('sip', '/sounds/sip.mp3')
+    loadSound('score', '/sounds/score.mp3')
+
+    // game variables
+    let speed = 627
+    let bugSpeed = 2
+    let bg = false
+
+    // function to play bgm
+    const music = play("bg", {
+        volume: 0.03,
+        loop: true
+    })
+
+    // display score
+    const score = add([
+        text(`Score: 0`),
+        pos(width() - 191, 81),
+        { value: 0 },
+        color(255, 0, 0)
+    ])
+
+    // adding the programmer
+    const player = add([
+        sprite('programmer'), // renders as a sprite
+        pos(120, 80), // position in world
+        area(), // has a collider
+        scale(.15),
+        // body() // responds to physics and gravity
+    ])
+
+    // add events to our player
+    onKeyDown('left', () => {
+        player.move(-speed, 0)
+        // music()
+    })
+    onKeyDown('right', () => {
+        player.move(speed, 0)
+        // music()
+    })
+    onKeyDown('up', () => {
+        player.move(0, -speed)
+        // music()
+    })
+    onKeyDown('down', () => {
+        player.move(0, speed)
+        // music()
+    })
+
+    // adding 4 bugs and chai on loop
+    loop(3, () => {
+        for (let i = 0; i < 6; i++) {
+            let x = rand(0, width())
+            let y = height()
+            let c = add([
+                sprite('bug'),
+                pos(x, y),
+                area(),
+                scale(.15),
+                'bug'
+            ])
+            c.onUpdate(() => c.moveTo(c.pos.x, c.pos.y - bugSpeed))
+        }
+        let x = rand(0, width())
+        let y = height()
+        // introducing chai
+        let c = add([
+            sprite('chai'),
+            pos(x, y),
+            area(),
+            scale(.15),
+            'chai'
+        ])
+        c.onUpdate(() => c.moveTo(c.pos.x, c.pos.y - bugSpeed))
+        if (bugSpeed < 13) bugSpeed++
+    });
+
+    player.onCollide('bug', () => {
+        play('gameOver')
+        destroy(player)
+        addKaboom(player.pos)
+        score.text = `Game Over`
+    })
+    player.onCollide('chai', chai => {
+        play('sip')
+        destroy(chai)
+        score.value += 1
+        score.text = `Score: ${score.value}`
+    })
+</script>
+
+</html>
